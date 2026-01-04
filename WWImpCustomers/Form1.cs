@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using WWImpCustomers.Data;
 using WWImpCustomers.Models;
+using WWImpCustomers.Services;
 
 namespace WWImpCustomers
 {
@@ -10,16 +12,62 @@ namespace WWImpCustomers
     {
         private readonly ICustomerRepository _repo;
 
+        private readonly ICustomerService _customerService;
+        private readonly ILookupRepository _lookupRepo;
+
+        public Form1(ICustomerService customerService, ILookupRepository lookupRepo)
+        {
+            InitializeComponent();
+            _customerService = customerService;
+            _lookupRepo = lookupRepo;
+        }
+
         public lblSearch()
         {
             InitializeComponent();
             _repo = new CustomerRepository("Server=DESKTOP-1GGPEFA;Database=WideWorldImporters;Integrated Security=true;");
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
         {
-            LoadGrid();
+            await LoadLookupsAsync();
+            await LoadCustomersAsync();
         }
+
+        private async Task LoadLookupsAsync()
+        {
+            // Customer Categories
+            var categories = await _lookupRepo.GetCustomerCategoriesAsync();
+            cmbCustomerCategory.DataSource = categories.ToList();
+            cmbCustomerCategory.DisplayMember = "Name";
+            cmbCustomerCategory.ValueMember = "Id";
+
+            // People (Primary Contact)
+            var people = await _lookupRepo.GetPeopleAsync();
+            cmbPrimaryContact.DataSource = people.ToList();
+            cmbPrimaryContact.DisplayMember = "FullName";
+            cmbPrimaryContact.ValueMember = "Id";
+
+            // Delivery Methods
+            var methods = await _lookupRepo.GetDeliveryMethodsAsync();
+            cmbDeliveryMethod.DataSource = methods.ToList();
+            cmbDeliveryMethod.DisplayMember = "Name";
+            cmbDeliveryMethod.ValueMember = "Id";
+
+            // Cities
+            var cities = await _lookupRepo.GetCitiesAsync();
+            cmbDeliveryCity.DataSource = cities.ToList();
+            cmbDeliveryCity.DisplayMember = "Name";
+            cmbDeliveryCity.ValueMember = "Id";
+        }
+
+        private async Task LoadCustomersAsync()
+        {
+            var customers = await _customerService.GetAllAsync();
+            dgvCustomers.DataSource = customers.ToList();
+        }
+
+
 
         private void LoadGrid()
         {
@@ -66,7 +114,7 @@ namespace WWImpCustomers
             }
         }
 
-        private void dgvCustomers_SelectionChanged(object sender, EventArgs e)
+        private void DgvCustomers_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvCustomers.CurrentRow == null) return;
 
@@ -544,9 +592,27 @@ namespace WWImpCustomers
 
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void dgvCustomers_SelectionChanged(object sender, EventArgs e)
         {
+            if (dgvCustomers.CurrentRow == null) return;
 
+            txtCustomerID.Text = dgvCustomers.CurrentRow.Cells["CustomerID"].Value?.ToString();
+            txtCustomerName.Text = dgvCustomers.CurrentRow.Cells["CustomerName"].Value?.ToString();
+            txtPhoneNumber.Text = dgvCustomers.CurrentRow.Cells["PhoneNumber"].Value?.ToString();
+            txtFaxNumber.Text = dgvCustomers.CurrentRow.Cells["FaxNumber"].Value?.ToString();
+            txtWebsiteURL.Text = dgvCustomers.CurrentRow.Cells["WebsiteURL"].Value?.ToString();
+
+            cmbCustomerCategory.SelectedValue =
+                dgvCustomers.CurrentRow.Cells["CustomerCategoryID"].Value;
+
+            cmbPrimaryContact.SelectedValue =
+                dgvCustomers.CurrentRow.Cells["PrimaryContactPersonID"].Value;
+
+            cmbDeliveryMethod.SelectedValue =
+                dgvCustomers.CurrentRow.Cells["DeliveryMethodID"].Value;
+
+            cmbDeliveryCity.SelectedValue =
+                dgvCustomers.CurrentRow.Cells["DeliveryCityID"].Value;
         }
     }
 }
