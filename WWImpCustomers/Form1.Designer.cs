@@ -6,11 +6,11 @@ using WWImpCustomers.Services;
 
 namespace WWImpCustomers
 {
-    public partial class Form1 : Form
+    public partial class lblSearch : Form
     {
         private readonly ICustomerService _service;
 
-        public Form1(ICustomerService service)
+        public lblSearch(ICustomerService service)
         {
             InitializeComponent();
             _service = service;
@@ -76,6 +76,16 @@ namespace WWImpCustomers
         private ComboBox cmbDeliveryMethod;
         private ComboBox cmbDeliveryCity;
         private GroupBox groupBox1;
+        private Label label7;
+        private TextBox txtSearch;
+        private Button btnSearch;
+        private Button btnClearSearch;
+        private Label label13;
+        private Label label14;
+        private Label label15;
+        private Label label16;
+        private Label label17;
+        private Label label18;
     }
 
 

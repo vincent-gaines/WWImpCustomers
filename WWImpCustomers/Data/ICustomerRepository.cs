@@ -15,5 +15,6 @@ namespace WWImpCustomers.Data
         Task<int> AddAsync(Customer customer);
         Task<bool> UpdateAsync(Customer customer);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<Customer>> SearchAsync(string searchText);
     }
 }

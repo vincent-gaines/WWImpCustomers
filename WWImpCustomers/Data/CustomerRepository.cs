@@ -163,5 +163,43 @@ namespace WWImpCustomers.Data
                 return await cmd.ExecuteNonQueryAsync() > 0;
             }
         }
+
+        public async Task<IEnumerable<Customer>> SearchAsync(string searchText)
+        {
+            var list = new List<Customer>();
+
+            using var conn = new SqlConnection(_conn);
+            using var cmd = new SqlCommand(
+                @"SELECT CustomerID, CustomerName, PhoneNumber, FaxNumber, WebsiteURL,
+                 CustomerCategoryID, PrimaryContactPersonID, DeliveryMethodID, DeliveryCityID
+          FROM Sales.Customers
+          WHERE CustomerName LIKE @search
+             OR PhoneNumber LIKE @search
+             OR FaxNumber LIKE @search
+             OR WebsiteURL LIKE @search", conn);
+
+            cmd.Parameters.AddWithValue("@search", $"%{searchText}%");
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Customer
+                {
+                    CustomerID = reader.GetInt32(0),
+                    CustomerName = reader.GetString(1),
+                    PhoneNumber = reader.IsDBNull(2) ? null : reader.GetString(2),
+                    FaxNumber = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    WebsiteURL = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    CustomerCategoryID = reader.GetInt32(5),
+                    PrimaryContactPersonID = reader.GetInt32(6),
+                    DeliveryMethodID = reader.GetInt32(7),
+                    DeliveryCityID = reader.GetInt32(8)
+                });
+            }
+
+            return list;
+        }
     }
 }
