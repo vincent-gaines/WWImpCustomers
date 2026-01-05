@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -8,12 +10,17 @@ using WWImpCustomers.Services;
 
 namespace WWImpCustomers
 {
-    public partial class lblSearch : Form
+    public partial class Form1 : Form
     {
-        private readonly ICustomerRepository _repo;
+        private string _connectionString =
+            "Server=YOUR_SERVER_NAME;Database=WideWorldImporters;Integrated Security=true;";
+     
+        private DataTable _customersTable;
 
         private readonly ICustomerService _customerService;
         private readonly ILookupRepository _lookupRepo;
+        private readonly ICustomerRepository _repo;
+
 
         public Form1(ICustomerService customerService, ILookupRepository lookupRepo)
         {
@@ -22,16 +29,30 @@ namespace WWImpCustomers
             _lookupRepo = lookupRepo;
         }
 
-        public lblSearch()
+      
+        private void LoadCustomers()
         {
-            InitializeComponent();
-            _repo = new CustomerRepository("Server=DESKTOP-1GGPEFA;Database=WideWorldImporters;Integrated Security=true;");
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlDataAdapter da = new SqlDataAdapter(
+                @"SELECT CustomerID, CustomerName, PhoneNumber, FaxNumber, WebsiteURL
+          FROM Sales.Customers", conn))
+            {
+                _customersTable = new DataTable();
+                da.Fill(_customersTable);
+                dgvCustomers.DataSource = _customersTable;
+            }
+
+            dgvCustomers.AutoResizeColumns();
         }
 
         private async void Form1_Load(object sender, EventArgs e)
         {
             await LoadLookupsAsync();
             await LoadCustomersAsync();
+        }
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            LoadCustomers();
         }
 
         private async Task LoadLookupsAsync()
@@ -69,9 +90,10 @@ namespace WWImpCustomers
 
 
 
-        private void LoadGrid()
+        private async Task LoadGrid()
         {
-            dgvCustomers.DataSource = _repo.GetAll().ToList();
+            var customers = await _customerService.GetAllAsync();
+            dgvCustomers.DataSource = customers.ToList();
         }
 
         private Customer BuildCustomerFromInputs()
@@ -88,31 +110,30 @@ namespace WWImpCustomers
             };
         }
 
-        private void btnAdd_Click(object sender, EventArgs e)
+     
+        private async void btnAdd_Click(object sender, EventArgs e)
         {
-            var customer = BuildCustomerFromInputs();
-            int newId = _repo.Add(customer);
-            MessageBox.Show($"Added customer with ID {newId}");
-            LoadGrid();
+            var c = BuildCustomerFromInputs();
+            await _service.CreateAsync(c);
+            dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private async void btnUpdate_Click(object sender, EventArgs e)
         {
-            var customer = BuildCustomerFromInputs();
-            if (_repo.Update(customer))
-                MessageBox.Show("Updated successfully");
-            LoadGrid();
+            var c = BuildCustomerFromInputs();
+            await _service.UpdateAsync(c);
+            dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private async void btnDelete_Click(object sender, EventArgs e)
         {
             if (int.TryParse(txtCustomerID.Text, out int id))
             {
-                if (_repo.Delete(id))
-                    MessageBox.Show("Deleted successfully");
-                LoadGrid();
+                await _service.DeleteAsync(id);
+                dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
             }
         }
+
 
         private void DgvCustomers_SelectionChanged(object sender, EventArgs e)
         {

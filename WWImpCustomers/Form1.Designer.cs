@@ -6,43 +6,17 @@ using WWImpCustomers.Services;
 
 namespace WWImpCustomers
 {
-    public partial class lblSearch : Form
+    public partial class Form1 : Form
     {
         private readonly ICustomerService _service;
 
-        public lblSearch(ICustomerService service)
+        public Form1(ICustomerService service)
         {
             InitializeComponent();
             _service = service;
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
-        {
-            dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
-        }
-
-        private async void btnAdd_Click(object sender, EventArgs e)
-        {
-            var c = BuildCustomerFromInputs();
-            await _service.CreateAsync(c);
-            dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
-        }
-
-        private async void btnUpdate_Click(object sender, EventArgs e)
-        {
-            var c = BuildCustomerFromInputs();
-            await _service.UpdateAsync(c);
-            dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
-        }
-
-        private async void btnDelete_Click(object sender, EventArgs e)
-        {
-            if (int.TryParse(txtCustomerID.Text, out int id))
-            {
-                await _service.DeleteAsync(id);
-                dgvCustomers.DataSource = (await _service.GetAllAsync()).ToList();
-            }
-        }
+        
 
         private TextBox txtCustomerID;
         private TextBox txtCustomerName;

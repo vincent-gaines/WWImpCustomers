@@ -12,6 +12,7 @@ namespace WWImpCustomers.Startup
 {
     public static class DependencyInjection
     {
+
         public static ServiceProvider Configure()
         {
             var services = new ServiceCollection();
