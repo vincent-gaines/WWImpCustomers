@@ -1,9 +1,12 @@
-﻿using Microsoft.Data.SqlClient; 
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WWImpCustomers.Services;
+using WWImpCustomers.Startup;
 
 namespace WWImpCustomers
 {
@@ -12,7 +15,9 @@ namespace WWImpCustomers
         [STAThread]
         static void Main()
         {
-            var provider = DependencyInjection.Configure();
+
+            DependencyInjection.Configure();
+            var provider = DependencyInjection.ServiceProvider;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

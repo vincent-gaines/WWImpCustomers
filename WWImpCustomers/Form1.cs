@@ -45,6 +45,7 @@ namespace WWImpCustomers
             dgvCustomers.AutoResizeColumns();
         }
 
+
         private async void Form1_Load(object sender, EventArgs e)
         {
             await LoadLookupsAsync();
@@ -92,8 +93,11 @@ namespace WWImpCustomers
 
         private async Task LoadGrid()
         {
-            var customers = await _customerService.GetAllAsync();
-            dgvCustomers.DataSource = customers.ToList();
+            var customers = (await _customerService.GetAllAsync())
+            .OrderBy(c => c.CustomerName)
+            .ToList();
+
+            dgvCustomers.DataSource = customers;
         }
 
         private Customer BuildCustomerFromInputs()
@@ -181,15 +185,15 @@ namespace WWImpCustomers
             this.cmbDeliveryCity = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.txtSearch = new System.Windows.Forms.TextBox();
-            this.btnSearch = new System.Windows.Forms.Button();
-            this.btnClearSearch = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
+            this.txtSearch = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
+            this.btnSearch = new System.Windows.Forms.Button();
             this.label18 = new System.Windows.Forms.Label();
+            this.btnClearSearch = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCustomers)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -490,31 +494,6 @@ namespace WWImpCustomers
             this.label7.TabIndex = 32;
             this.label7.Text = "label7";
             // 
-            // txtSearch
-            // 
-            this.txtSearch.Location = new System.Drawing.Point(270, 482);
-            this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Size = new System.Drawing.Size(100, 20);
-            this.txtSearch.TabIndex = 33;
-            // 
-            // btnSearch
-            // 
-            this.btnSearch.Location = new System.Drawing.Point(497, 479);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(75, 23);
-            this.btnSearch.TabIndex = 34;
-            this.btnSearch.Text = "Search";
-            this.btnSearch.UseVisualStyleBackColor = true;
-            // 
-            // btnClearSearch
-            // 
-            this.btnClearSearch.Location = new System.Drawing.Point(783, 497);
-            this.btnClearSearch.Name = "btnClearSearch";
-            this.btnClearSearch.Size = new System.Drawing.Size(75, 23);
-            this.btnClearSearch.TabIndex = 35;
-            this.btnClearSearch.Text = "Clear";
-            this.btnClearSearch.UseVisualStyleBackColor = true;
-            // 
             // label13
             // 
             this.label13.AutoSize = true;
@@ -551,6 +530,13 @@ namespace WWImpCustomers
             this.label16.TabIndex = 39;
             this.label16.Text = "[";
             // 
+            // txtSearch
+            // 
+            this.txtSearch.Location = new System.Drawing.Point(270, 482);
+            this.txtSearch.Name = "txtSearch";
+            this.txtSearch.Size = new System.Drawing.Size(100, 20);
+            this.txtSearch.TabIndex = 33;
+            // 
             // label17
             // 
             this.label17.AutoSize = true;
@@ -559,6 +545,17 @@ namespace WWImpCustomers
             this.label17.Size = new System.Drawing.Size(10, 13);
             this.label17.TabIndex = 40;
             this.label17.Text = "[";
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Location = new System.Drawing.Point(497, 479);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(75, 23);
+            this.btnSearch.TabIndex = 34;
+            this.btnSearch.Text = "Search";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.TextChanged += new System.EventHandler(this.btnSearch_TextChanged);
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
             // 
             // label18
             // 
@@ -569,7 +566,17 @@ namespace WWImpCustomers
             this.label18.TabIndex = 41;
             this.label18.Text = "[";
             // 
-            // lblSearch
+            // btnClearSearch
+            // 
+            this.btnClearSearch.Location = new System.Drawing.Point(783, 497);
+            this.btnClearSearch.Name = "btnClearSearch";
+            this.btnClearSearch.Size = new System.Drawing.Size(75, 23);
+            this.btnClearSearch.TabIndex = 35;
+            this.btnClearSearch.Text = "Clear";
+            this.btnClearSearch.UseVisualStyleBackColor = true;
+            this.btnClearSearch.Click += new System.EventHandler(this.btnClearSearch_Click);
+            // 
+            // Form1
             // 
             this.ClientSize = new System.Drawing.Size(1670, 776);
             this.Controls.Add(this.label18);
@@ -604,7 +611,7 @@ namespace WWImpCustomers
             this.Controls.Add(this.txtPhoneNumber);
             this.Controls.Add(this.txtCustomerName);
             this.Controls.Add(this.txtCustomerID);
-            this.Name = "lblSearch";
+            this.Name = "Form1";
             this.Text = "Search :";
             ((System.ComponentModel.ISupportInitialize)(this.dgvCustomers)).EndInit();
             this.groupBox1.ResumeLayout(false);
@@ -634,6 +641,40 @@ namespace WWImpCustomers
 
             cmbDeliveryCity.SelectedValue =
                 dgvCustomers.CurrentRow.Cells["DeliveryCityID"].Value;
+        }
+
+        private async void btnSearch_Click(object sender, EventArgs e)
+        {
+            var text = txtSearch.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                await LoadCustomersAsync();
+                return;
+            }
+
+            var results = await _customerService.SearchAsync(text);
+            dgvCustomers.DataSource = results.ToList();
+        }
+
+        private async void btnClearSearch_Click(object sender, EventArgs e)
+        {
+            txtSearch.Text = string.Empty;
+            await LoadCustomersAsync();
+        }
+
+        private async void btnSearch_TextChanged(object sender, EventArgs e)
+        {
+            var text = txtSearch.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                await LoadCustomersAsync();
+                return;
+            }
+
+            var results = await _customerService.SearchAsync(text);
+            dgvCustomers.DataSource = results.ToList();
         }
     }
 }

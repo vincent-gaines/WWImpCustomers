@@ -16,14 +16,16 @@ namespace WWImpCustomers
             _service = service;
         }
 
-        
+
 
         private TextBox txtCustomerID;
         private TextBox txtCustomerName;
         private TextBox txtPhoneNumber;
         private TextBox txtFaxNumber;
         private TextBox txtWebsiteURL;
+
         private DataGridView dgvCustomers;
+
         private DataGridViewTextBoxColumn dgvCustomerID;
         private DataGridViewTextBoxColumn dgvCustomerName;
         private DataGridViewTextBoxColumn dgvPhoneNumber;
@@ -51,17 +53,19 @@ namespace WWImpCustomers
         private ComboBox cmbDeliveryCity;
         private GroupBox groupBox1;
         private Label label7;
-        private TextBox txtSearch;
-        private Button btnSearch;
-        private Button btnClearSearch;
         private Label label13;
         private Label label14;
         private Label label15;
         private Label label16;
+        private TextBox txtSearch;
         private Label label17;
+        private Button btnSearch;
         private Label label18;
+        private Button btnClearSearch;
+
+
+
+
     }
-
-
 }
 
