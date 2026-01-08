@@ -8,7 +8,7 @@ using WideWorldImportersCustomers.Data;
 using WWImpCustomers.Data;
 using WWImpCustomers.Infrastructure;
 using WWImpCustomers.Services;
-
+// wroks just fine
 namespace WWImpCustomers.Startup
 {
     public static class DependencyInjection
